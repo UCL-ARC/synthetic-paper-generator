@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Uprety"
+    given-names: "Sagar"
+    email: "s.uprety@ucl.ac.uk"
+repository-code: "https://github.com/UCL-ARC/synthetic-paper-generator"
+title: "synthetic_paper_generator: generating synthetic scientific articles in LaTeX using PyLaTeX, rendering them to PDF, and testing OCR/parsing tools in a controlled way."
+license: "MIT"

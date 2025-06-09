@@ -1,0 +1,34 @@
+document_classes:
+  - article
+  - IEEEtran
+  - elsarticle
+  - acmart
+
+font_sizes:
+  - 10pt
+  - 11pt
+  - 12pt
+
+columns:
+  - onecolumn
+  - twocolumn
+
+include_math:
+  - true
+  - false
+
+include_tables:
+  - true
+  - false
+
+include_figures:
+  - true
+  - false
+
+num_sections:
+  - 3
+  - 5
+
+num_references:
+  - 5
+  - 10
