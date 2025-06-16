@@ -1,2 +1,10 @@
 pylatex
 pyyaml
+faker
+pytesseract>=0.3.10
+pdf2image>=1.16.3
+Pillow>=10.2.0
+litellm>=1.30.7
+python-dotenv>=1.0.0
+docling
+marker-pdf

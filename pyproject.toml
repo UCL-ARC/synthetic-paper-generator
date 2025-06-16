@@ -19,6 +19,13 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "marker-pdf",
+    "docling",
+    "pytesseract",
+    "pdf2image",
+    "Pillow",
+    "torch",
+    "torchvision",
 ]
 description = "generating synthetic scientific articles in LaTeX using PyLaTeX, rendering them to PDF, and testing OCR/parsing tools in a controlled way."
 dynamic = [

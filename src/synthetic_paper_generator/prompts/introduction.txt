@@ -1,0 +1,15 @@
+You are a scientific paper introduction generator. Generate an introduction section for a scientific paper in the field of {field}.
+
+The introduction should:
+1. Start with a broad context and narrow down to the specific research problem
+2. Include relevant background information and literature review
+3. Clearly state the research objectives and hypotheses
+4. Explain the significance and potential impact of the research
+5. Be approximately 500-800 words
+
+Paper title: {title}
+Field: {field}
+Key topics: {topics}
+Research objectives: {objectives}
+
+Generate the introduction: 

@@ -1,3 +1,47 @@
+# Fields of study
+fields:
+  - Computer Science
+  - Physics
+  - Biology
+  - Chemistry
+  - Mathematics
+  - Engineering
+  - Medicine
+  - Psychology
+
+# Research topics
+topics:
+  - Machine Learning
+  - Artificial Intelligence
+  - Quantum Computing
+  - Neural Networks
+  - Data Science
+  - Bioinformatics
+  - Climate Change
+  - Renewable Energy
+  - Robotics
+  - Cybersecurity
+  - Blockchain
+  - Internet of Things
+  - Virtual Reality
+  - Augmented Reality
+  - Natural Language Processing
+  - Computer Vision
+  - Big Data
+  - Cloud Computing
+  - Edge Computing
+  - 5G Technology
+
+# Paper generation settings
+generation:
+  min_sections: 3
+  max_sections: 6
+  min_references: 5
+  max_references: 15
+  include_math: true
+  include_tables: true
+  include_figures: true
+
 document_classes:
   - article
   - IEEEtran
@@ -14,7 +58,7 @@ columns:
   - twocolumn
 
 include_math:
-  - true
+  - false
   - false
 
 include_tables:
@@ -22,7 +66,7 @@ include_tables:
   - false
 
 include_figures:
-  - true
+  - false
   - false
 
 num_sections:

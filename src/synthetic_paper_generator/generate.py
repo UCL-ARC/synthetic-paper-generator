@@ -1,112 +1,134 @@
-import yaml
+"""Main module for generating synthetic scientific papers."""
+
 import os
-import json
-import random
-from pylatex import Document, Section, Subsection, Command, Figure, Table, Math
-from pylatex.utils import NoEscape
-from itertools import product
-import uuid
+from pathlib import Path
+from typing import Dict, List, Optional
+import yaml
+from faker import Faker
+from .services.llm_service import LLMService
 
-with open('config.yaml', 'r') as f:
-    config = yaml.safe_load(f)
 
-def generate_text(sentence_count=5):
-    return " ".join(["This is a synthetic sentence."] * sentence_count)
+class PaperGenerator:
+    """Generator for synthetic scientific papers."""
 
-def init_ground_truth():
-    return {
-        "title": "",
-        "author": "",
-        "abstract": "",
-        "sections": [],
-        "references": []
-    }
+    def __init__(
+        self,
+        config_path: Optional[Path] = None,
+        llm_provider: str = "openai",
+        llm_model: str = "gpt-4-turbo-preview",
+    ) -> None:
+        """Initialize the paper generator.
 
-def main():
-    os.makedirs('output/tex', exist_ok=True)
-    os.makedirs('output/pdf', exist_ok=True)
-    os.makedirs('output/ground_truth_json', exist_ok=True)
+        Args:
+            config_path: Path to the configuration file
+            llm_provider: LLM provider to use for content generation
+            llm_model: Specific LLM model to use
+        """
+        self.fake = Faker()
+        self.config = self._load_config(config_path)
+        self.llm_service = LLMService(provider=llm_provider, model=llm_model)
 
-    combinations = list(product(
-        config['document_classes'],
-        config['font_sizes'],
-        config['columns'],
-        config['include_math'],
-        config['include_tables'],
-        config['include_figures'],
-        config['num_sections'],
-        config['num_references']
-    ))
+    def _load_config(self, config_path: Optional[Path]) -> Dict:
+        """Load configuration from YAML file.
 
-    for combo in combinations[:2]:  # Limit to 2 for quick testing
-        (doc_class, font_size, columns, include_math, include_tables, include_figures, num_sections, num_references) = combo
-        uid = str(uuid.uuid4())
-        filename_prefix = f"{uid}"
+        Args:
+            config_path: Path to the configuration file
 
-        gt = init_ground_truth()
-        gt['title'] = f"Synthetic Title {uid}"
-        gt['author'] = "Synthetic Author"
-        gt['abstract'] = generate_text(3)
+        Returns:
+            Configuration dictionary
+        """
+        if config_path is None:
+            config_path = Path(__file__).parent / "config.yaml"
+        
+        with open(config_path) as f:
+            return yaml.safe_load(f)
 
-        doc = Document(documentclass=doc_class, document_options=[font_size, columns])
-        doc.preamble.append(Command('title', gt['title']))
-        doc.preamble.append(Command('author', gt['author']))
-        doc.preamble.append(Command('date', NoEscape(r'\today')))
-        doc.append(NoEscape(r'\maketitle'))
+    def generate_paper_metadata(self) -> Dict[str, str]:
+        """Generate metadata for the paper.
 
-        doc.append(NoEscape(r'\begin{abstract}'))
-        doc.append(gt['abstract'])
-        doc.append(NoEscape(r'\end{abstract}'))
+        Returns:
+            Dictionary containing paper metadata
+        """
+        return {
+            "title": self.fake.catch_phrase(),
+            "authors": [self.fake.name() for _ in range(3)],
+            "institution": self.fake.university(),
+            "field": self.fake.random_element(self.config["fields"]),
+            "topics": self.fake.random_elements(
+                self.config["topics"],
+                length=self.fake.random_int(2, 4),
+                unique=True
+            ),
+        }
 
-        for sec_num in range(num_sections):
-            section_title = f"Section {sec_num+1}"
-            section_text = generate_text(5)
-            gt['sections'].append({
-                "title": section_title,
-                "text": section_text,
-                "equations": [],
-                "tables": [],
-                "figures": []
-            })
-            with doc.create(Section(section_title)):
-                doc.append(section_text)
+    def generate_paper_content(self, metadata: Dict[str, str]) -> Dict[str, str]:
+        """Generate the content of the paper.
 
-                if include_math:
-                    eq = "E = mc^2"
-                    gt['sections'][-1]['equations'].append(eq)
-                    with doc.create(Subsection("Example Equation")):
-                        doc.append(Math(data=[eq]))
+        Args:
+            metadata: Paper metadata dictionary
 
-                if include_tables:
-                    table_text = "Example synthetic table."
-                    gt['sections'][-1]['tables'].append(table_text)
-                    with doc.create(Subsection("Example Table")):
-                        with doc.create(Table(position='h!')) as table:
-                            table.add_caption(table_text)
-                            table.append(NoEscape(r'''
-                            \begin{tabular}{|c|c|c|}
-                            \hline
-                            A & B & C \\
-                            \hline
-                            1 & 2 & 3 \\
-                            4 & 5 & 6 \\
-                            \hline
-                            \end{tabular}
-                            '''))
+        Returns:
+            Dictionary containing paper sections
+        """
+        # Generate abstract
+        abstract = self.llm_service.generate_section(
+            "abstract",
+            {
+                "title": metadata["title"],
+                "field": metadata["field"],
+                "topics": ", ".join(metadata["topics"]),
+            }
+        )
 
-        for ref_num in range(num_references):
-            ref_text = f"[{ref_num+1}] Synthetic Reference {ref_num+1}."
-            gt['references'].append(ref_text)
-            doc.append(NoEscape(ref_text + r'\\'))
+        # Generate introduction
+        introduction = self.llm_service.generate_section(
+            "introduction",
+            {
+                "title": metadata["title"],
+                "field": metadata["field"],
+                "topics": ", ".join(metadata["topics"]),
+                "objectives": "To investigate " + ", ".join(metadata["topics"]),
+            }
+        )
 
-        tex_path = f'output/tex/{filename_prefix}.tex'
-        pdf_path = f'output/pdf/{filename_prefix}.pdf'
-        gt_path = f'output/ground_truth_json/{filename_prefix}.json'
+        return {
+            "abstract": abstract,
+            "introduction": introduction,
+            # Add more sections as needed
+        }
 
-        doc.generate_pdf(pdf_path[:-4], clean_tex=False)
+    def generate_paper(self) -> Dict[str, Any]:
+        """Generate a complete synthetic paper.
 
-        with open(gt_path, 'w') as f:
-            json.dump(gt, f, indent=2)
+        Returns:
+            Dictionary containing the complete paper
+        """
+        metadata = self.generate_paper_metadata()
+        content = self.generate_paper_content(metadata)
+        
+        return {
+            "metadata": metadata,
+            "content": content,
+        }
+
+
+def main() -> None:
+    """Main function to generate a synthetic paper."""
+    generator = PaperGenerator()
+    paper = generator.generate_paper()
+    
+    # Print the generated paper
+    print("\n=== Generated Paper ===\n")
+    print(f"Title: {paper['metadata']['title']}")
+    print(f"Authors: {', '.join(paper['metadata']['authors'])}")
+    print(f"Institution: {paper['metadata']['institution']}")
+    print(f"Field: {paper['metadata']['field']}")
+    print(f"Topics: {', '.join(paper['metadata']['topics'])}")
+    print("\n=== Abstract ===\n")
+    print(paper['content']['abstract'])
+    print("\n=== Introduction ===\n")
+    print(paper['content']['introduction'])
+
 
 if __name__ == "__main__":
     main()

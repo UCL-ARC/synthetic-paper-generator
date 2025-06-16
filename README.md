@@ -2,111 +2,94 @@
 
 This tool generates LaTeX documents using PyLaTeX with configurable structures, renders them as PDFs, and saves the original structure in JSON format for OCR comparison.
 
-## Usage
+## Quick Start
 
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run the generator: `python generate.py`
-3. Customize `config.yaml` to vary document features.
+###  System Requirements
 
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Tests status][tests-badge]][tests-link]
-[![Linting status][linting-badge]][linting-link]
-[![Documentation status][documentation-badge]][documentation-link]
-[![License][license-badge]](./LICENSE.md)
+- Python 3.11 or higher
+- Tesseract OCR (for OCR capabilities)
+- Poppler (for PDF processing)
 
-<!-- prettier-ignore-start -->
-[tests-badge]:              https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/tests.yml/badge.svg
-[tests-link]:               https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/tests.yml
-[linting-badge]:            https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/linting.yml/badge.svg
-[linting-link]:             https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/linting.yml
-[documentation-badge]:      https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/docs.yml/badge.svg
-[documentation-link]:       https://github.com/UCL-ARC/synthetic-paper-generator/actions/workflows/docs.yml
-[license-badge]:            https://img.shields.io/badge/License-MIT-yellow.svg
-<!-- prettier-ignore-end -->
+### Installing System Dependencies
 
-generating synthetic scientific articles in LaTeX using PyLaTeX, rendering them to PDF, and testing OCR/parsing tools in a controlled way.
+On macOS:
+```bash
+brew install tesseract poppler
+```
 
-This project is developed in collaboration with the
-[Centre for Advanced Research Computing](https://ucl.ac.uk/arc), University
-College London.
+On Ubuntu/Debian:
+```bash
+sudo apt-get install tesseract-ocr poppler-utils
+```
+
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run the generator:
+```bash
+python src/synthetic_paper_generator/generate.py
+```
+
+3. Run OCR pipeline:
+```bash
+python src/synthetic_paper_generator/ocr_pipeline.py
+```
+
+## Output Structure
+
+The tool generates the following directory structure under the `output` folder:
+
+```
+output/
+├── pdf/                    # Generated PDF files
+│   └── paper_*.pdf        # Generated scientific papers
+├── json/                   # Original structure in JSON format
+│   └── paper_*.json       # JSON files containing paper structure
+└── ocr_txt/               # OCR results from different engines
+    ├── tesseract/         # Tesseract OCR results
+    │   └── paper_*.txt
+    ├── marker/            # Marker PDF parser results
+    │   └── paper_*.txt
+    └── docling/           # Docling OCR results
+        └── paper_*.txt
+```
+
+### Understanding the Output
+
+1. **PDF Files** (`output/pdf/`):
+   - Generated scientific papers in PDF format
+   - Each file is named `paper_<timestamp>.pdf`
+
+2. **JSON Structure** (`output/json/`):
+   - Contains the original structure of each generated paper
+   - Useful for comparing OCR results with ground truth
+   - Each file corresponds to a PDF file with the same name
+
+3. **OCR Results** (`output/ocr_txt/`):
+   - Results from different OCR engines
+   - Each engine has its own subdirectory
+   - Text files contain extracted content from PDFs
+   - Useful for comparing OCR accuracy across different engines
+
+## Configuration
+
+You can customize the document generation by modifying `config.yaml`. The configuration file allows you to:
+- Adjust document structure
+- Modify content generation parameters
+- Change output formats and locations
+
 
 ## About
 
 ### Project Team
 
 Sagar Uprety ([s.uprety@ucl.ac.uk](mailto:s.uprety@ucl.ac.uk))
-
+Tim Repke ([tim.repke@pik-potsdam.de](mailto:tim.repke@pik-potsdam.de))
 <!-- TODO: how do we have an array of collaborators ? -->
 
-### Research Software Engineering Contact
 
-Centre for Advanced Research Computing, University College London
-([arc.collaborations@ucl.ac.uk](mailto:arc.collaborations@ucl.ac.uk))
-
-## Built With
-
-<!-- TODO: can cookiecutter make a list of frameworks? -->
-
-- [Framework 1](https://something.com)
-- [Framework 2](https://something.com)
-- [Framework 3](https://something.com)
-
-## Getting Started
-
-### Prerequisites
-
-<!-- Any tools or versions of languages needed to run code. For example specific Python or Node versions. Minimum hardware requirements also go here. -->
-
-`synthetic-paper-generator` requires Python 3.11&ndash;3.13.
-
-### Installation
-
-<!-- How to build or install the application. -->
-
-We recommend installing in a project specific virtual environment created using
-a environment management tool such as
-[Conda](https://docs.conda.io/projects/conda/en/stable/). To install the latest
-development version of `synthetic-paper-generator` using `pip` in the currently active
-environment run
-
-```sh
-pip install git+https://github.com/UCL-ARC/synthetic-paper-generator.git
-```
-
-Alternatively create a local clone of the repository with
-
-```sh
-git clone https://github.com/UCL-ARC/synthetic-paper-generator.git
-```
-
-and then install in editable mode by running
-
-```sh
-pip install -e .
-```
-
-### Running Locally
-
-How to run the application on your local system.
-
-### Running Tests
-
-<!-- How to run tests on your local system. -->
-
-Tests can be run across all compatible Python versions in isolated environments
-using [`tox`](https://tox.wiki/en/latest/) by running
-
-```sh
-tox
-```
-
-To run tests manually in a Python environment with `pytest` installed run
-
-```sh
-pytest tests
-```
-
-again from the root of the repository.
 
 ### Building Documentation
 
