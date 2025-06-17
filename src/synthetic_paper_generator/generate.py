@@ -2,9 +2,10 @@
 
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import yaml
 from faker import Faker
+import argparse
 from .services.llm_service import LLMService
 
 
@@ -14,8 +15,9 @@ class PaperGenerator:
     def __init__(
         self,
         config_path: Optional[Path] = None,
-        llm_provider: str = "openai",
-        llm_model: str = "gpt-4-turbo-preview",
+        llm_provider: str = "azure",
+        llm_model: str = "gpt-4o-mini",
+        use_llm: bool = True,
     ) -> None:
         """Initialize the paper generator.
 
@@ -23,10 +25,15 @@ class PaperGenerator:
             config_path: Path to the configuration file
             llm_provider: LLM provider to use for content generation
             llm_model: Specific LLM model to use
+            use_llm: Whether to use LLM for content generation
         """
         self.fake = Faker()
         self.config = self._load_config(config_path)
-        self.llm_service = LLMService(provider=llm_provider, model=llm_model)
+        self.use_llm = use_llm
+        if self.use_llm:
+            self.llm_service = LLMService(provider=llm_provider, model=llm_model)
+        else:
+            self.llm_service = None
 
     def _load_config(self, config_path: Optional[Path]) -> Dict:
         """Load configuration from YAML file.
@@ -52,7 +59,7 @@ class PaperGenerator:
         return {
             "title": self.fake.catch_phrase(),
             "authors": [self.fake.name() for _ in range(3)],
-            "institution": self.fake.university(),
+            "institution": f"{self.fake.company()} University",
             "field": self.fake.random_element(self.config["fields"]),
             "topics": self.fake.random_elements(
                 self.config["topics"],
@@ -70,26 +77,31 @@ class PaperGenerator:
         Returns:
             Dictionary containing paper sections
         """
-        # Generate abstract
-        abstract = self.llm_service.generate_section(
-            "abstract",
-            {
-                "title": metadata["title"],
-                "field": metadata["field"],
-                "topics": ", ".join(metadata["topics"]),
-            }
-        )
+        if self.use_llm and self.llm_service:
+            # Generate abstract
+            abstract = self.llm_service.generate_section(
+                "abstract",
+                {
+                    "title": metadata["title"],
+                    "field": metadata["field"],
+                    "topics": ", ".join(metadata["topics"]),
+                }
+            )
 
-        # Generate introduction
-        introduction = self.llm_service.generate_section(
-            "introduction",
-            {
-                "title": metadata["title"],
-                "field": metadata["field"],
-                "topics": ", ".join(metadata["topics"]),
-                "objectives": "To investigate " + ", ".join(metadata["topics"]),
-            }
-        )
+            # Generate introduction
+            introduction = self.llm_service.generate_section(
+                "introduction",
+                {
+                    "title": metadata["title"],
+                    "field": metadata["field"],
+                    "topics": ", ".join(metadata["topics"]),
+                    "objectives": "To investigate " + ", ".join(metadata["topics"]),
+                }
+            )
+        else:
+            # Use Faker to generate synthetic content
+            abstract = " ".join(self.fake.sentences(nb=5))
+            introduction = self.fake.paragraph(nb_sentences=7)
 
         return {
             "abstract": abstract,
@@ -114,7 +126,17 @@ class PaperGenerator:
 
 def main() -> None:
     """Main function to generate a synthetic paper."""
-    generator = PaperGenerator()
+    parser = argparse.ArgumentParser(description="Generate a synthetic scientific paper.")
+    parser.add_argument(
+        "--use-llm",
+        type=str,
+        default="false",
+        help="Whether to use LLM for content generation (true/false). Default: false",
+    )
+    args = parser.parse_args()
+    use_llm = args.use_llm.lower() == "true"
+
+    generator = PaperGenerator(use_llm=use_llm)
     paper = generator.generate_paper()
     
     # Print the generated paper

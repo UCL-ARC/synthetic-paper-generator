@@ -4,7 +4,7 @@ This tool generates LaTeX documents using PyLaTeX with configurable structures, 
 
 ## Quick Start
 
-###  System Requirements
+### System Requirements
 
 - Python 3.11 or higher
 - Tesseract OCR (for OCR capabilities)
@@ -22,19 +22,30 @@ On Ubuntu/Debian:
 sudo apt-get install tesseract-ocr poppler-utils
 ```
 
-1. Install dependencies:
+1. Install the package in development mode:
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
-2. Run the generator:
+2. Run the generator (from project root directory):
+
+By default, the generator uses the Faker library to create synthetic content (no LLM calls):
 ```bash
-python src/synthetic_paper_generator/generate.py
+python -m src.synthetic_paper_generator.generate
 ```
 
-3. Run OCR pipeline:
+To use an LLM for content generation (requires API keys and configuration):
 ```bash
-python src/synthetic_paper_generator/ocr_pipeline.py
+python -m src.synthetic_paper_generator.generate --use-llm true
+```
+
+- The `--use-llm` flag controls whether to use an LLM for content generation.
+- Default: `false` (uses Faker for abstracts and introductions)
+- Set to `true` to use your configured LLM provider (e.g., Azure OpenAI).
+
+3. Run OCR pipeline (from project root directory):
+```bash
+python -m src.synthetic_paper_generator.ocr_pipeline
 ```
 
 ## Output Structure
